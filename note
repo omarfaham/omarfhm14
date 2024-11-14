@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ملاحظاتي</title>
+    
+    <!-- إضافة الأيقونة (الشعار) -->
+    <link rel="icon" href="OPRS.png" type="image/png">
+    
+    <style>
+        /* تصميم صفحة الموقع */
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(45deg, #ff6f61, #ffb74d);
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, #007acc, #005f99);
+            padding: 40px 0;
+            color: white;
+            font-size: 32px;
+            font-weight: 600;
+            border-bottom: 5px solid #004477;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .note-form input, .note-form textarea {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            font-size: 16px;
+            background-color: #f4f4f9;
+        }
+
+        .note-form button {
+            padding: 14px 28px;
+            font-size: 18px;
+            background-color: #ff6f61;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .note-form button:hover {
+            background-color: #ff3d2e;
+        }
+
+        .notes-container {
+            margin-top: 40px;
+        }
+
+        .note-card {
+            background-color: #ffffff;
+            padding: 25px;
+            margin: 15px 0;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+            font-size: 16px;
+            text-align: right;
+        }
+
+        .note-card h3 {
+            font-size: 22px;
+            margin-top: 0;
+            font-weight: bold;
+            color: #007acc;
+        }
+
+        .note-card p {
+            margin: 10px 0;
+            font-size: 16px;
+            color: #555;
+        }
+
+        .note-card .delete-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: none;
+            border: none;
+            color: #333;
+            cursor: pointer;
+            font-size: 20px;
+            transition: color 0.3s ease;
+        }
+
+        .note-card .delete-button:hover {
+            color: #ff4d4d;
+        }
+
+        #search-bar {
+            width: 100%;
+            padding: 14px;
+            margin-top: 25px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            font-size: 16px;
+            background-color: #f4f4f9;
+        }
+
+        #search-bar:focus {
+            border-color: #007acc;
+            box-shadow: 0 0 8px rgba(0, 122, 204, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>ملاحظاتي</h1>
+</header>
+
+<div class="container">
+    <!-- نموذج إضافة ملاحظة -->
+    <div class="note-form">
+        <input type="text" id="note-title" placeholder="عنوان الملاحظة" required>
+        <textarea id="note-content" rows="4" placeholder="أدخل الملاحظة هنا..." required></textarea>
+        <button onclick="addNote()">إضافة ملاحظة</button>
+    </div>
+
+    <!-- شريط البحث -->
+    <input type="text" id="search-bar" placeholder="ابحث عن ملاحظة..." onkeyup="searchNotes()">
+
+    <!-- الحاوية لعرض الملاحظات -->
+    <div class="notes-container" id="notes-container">
+        <!-- الملاحظات ستضاف هنا -->
+    </div>
+</div>
+
+<script>
+    window.onload = loadNotes;
+
+    // دالة لإضافة ملاحظة جديدة
+    function addNote() {
+        const title = document.getElementById('note-title').value;
+        const content = document.getElementById('note-content').value;
+
+        if (title === "" || content === "") {
+            alert("يرجى إدخال عنوان ومحتوى الملاحظة.");
+            return;
+        }
+
+        const notesContainer = document.getElementById('notes-container');
+
+        // إنشاء بطاقة الملاحظة
+        const noteCard = document.createElement('div');
+        noteCard.classList.add('note-card');
+
+        noteCard.innerHTML = `
+            <h3>${title}</h3>
+            <p>${content}</p>
+            <button class="delete-button" onclick="deleteNote(this)">🗑️</button>
+        `;
+
+        notesContainer.appendChild(noteCard);
+
+        // حفظ الملاحظات
+        saveNotes();
+
+        // تفريغ الحقول
+        document.getElementById('note-title').value = '';
+        document.getElementById('note-content').value = '';
+    }
+
+    // دالة لحذف الملاحظة
+    function deleteNote(button) {
+        const noteCard = button.parentElement;
+        noteCard.remove();
+        saveNotes();
+    }
+
+    // دالة لحفظ الملاحظات في الـ localStorage
+    function saveNotes() {
+        const notes = [];
+        document.querySelectorAll('.note-card').forEach(note => {
+            const title = note.querySelector('h3').textContent;
+            const content = note.querySelector('p').textContent;
+            notes.push({ title, content });
+        });
+        localStorage.setItem('notes', JSON.stringify(notes));
+    }
+
+    // دالة لتحميل الملاحظات من الـ localStorage عند تحميل الصفحة
+    function loadNotes() {
+        const savedNotes = JSON.parse(localStorage.getItem('notes')) || [];
+        savedNotes.forEach(displayNote);
+    }
+
+    // دالة لعرض الملاحظات في الصفحة
+    function displayNote(note) {
+        const notesContainer = document.getElementById('notes-container');
+        const noteCard = document.createElement('div');
+        noteCard.classList.add('note-card');
+
+        noteCard.innerHTML = `
+            <h3>${note.title}</h3>
+            <p>${note.content}</p>
+            <button class="delete-button" onclick="deleteNote(this)">🗑️</button>
+        `;
+
+        notesContainer.appendChild(noteCard);
+    }
+
+    // دالة للبحث عن الملاحظات
+    function searchNotes() {
+        const query = document.getElementById('search-bar').value.toLowerCase();
+        const notes = document.querySelectorAll('.note-card');
+        notes.forEach(note => {
+            const title = note.querySelector('h3').textContent.toLowerCase();
+            const content = note.querySelector('p').textContent.toLowerCase();
+            if (title.includes(query) || content.includes(query)) {
+                note.style.display = 'block';
+            } else {
+                note.style.display = 'none';
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
